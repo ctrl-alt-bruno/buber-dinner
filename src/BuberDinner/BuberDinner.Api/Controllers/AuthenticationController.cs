@@ -11,17 +11,17 @@ public class AuthenticationController(IAuthenticationService authenticationServi
     [HttpPost("register")]
     public IActionResult Register(RegisterRequest request)
     {
-        var registrationResult = authenticationService.Register(
+        AuthenticationResult registrationResult = authenticationService.Register(
             request.FirstName, 
             request.LastName, 
             request.Email, 
             request.Password);
 
         var response = new AuthenticationResponse(
-            registrationResult.Id,
-            registrationResult.FirstName,
-            registrationResult.LastName,
-            registrationResult.Email,
+            registrationResult.User.Id,
+            registrationResult.User.FirstName,
+            registrationResult.User.LastName,
+            registrationResult.User.Email,
             registrationResult.Token);
 
         return Ok(response);
@@ -35,10 +35,10 @@ public class AuthenticationController(IAuthenticationService authenticationServi
             request.Password);
 
         var response = new AuthenticationResponse(
-            registrationResult.Id,
-            registrationResult.FirstName,
-            registrationResult.LastName,
-            registrationResult.Email,
+            registrationResult.User.Id,
+            registrationResult.User.FirstName,
+            registrationResult.User.LastName,
+            registrationResult.User.Email,
             registrationResult.Token);
 
         return Ok(response);

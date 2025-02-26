@@ -1,35 +1,49 @@
 using BuberDinner.Application.Common.Interfaces.Authentication;
+using BuberDinner.Application.Common.Interfaces.Persistence;
+using BuberDinner.Domain.Entities;
 
 namespace BuberDinner.Application.Services.Authentication;
 
-public class AuthenticationService(IJwtTokenGenerator jwtTokenGenerator) : IAuthenticationService
+public class AuthenticationService(
+    IJwtTokenGenerator jwtTokenGenerator,
+    IUserRepository userRepository) : IAuthenticationService
 {
     public AuthenticationResult Login(string email, string password)
     {
-        Guid userId = Guid.NewGuid();
-        string firstName = "John";
-        string lastName = "Doe";
-        string token = jwtTokenGenerator.GenerateToken(userId, "firstName", "lastName");
+        User? user = userRepository.GetUserByEmail(email);
+
+        if (user is null)
+            throw new Exception("User not found");
+
+        if (user.Password != password)
+            throw new Exception("Invalid password");
+        
+        string token = jwtTokenGenerator.GenerateToken(user);
         
         return new AuthenticationResult(
-            userId,
-            firstName,
-            lastName,
-            email,
+            user,
             token);
     }
 
     public AuthenticationResult Register(string firstName, string lastName, string email, string password)
     {
-        Guid userId = Guid.NewGuid();
-        
-        var token = jwtTokenGenerator.GenerateToken(userId, firstName, lastName);
+        if (userRepository.GetUserByEmail(email) is not null)
+            throw new Exception("User with this email already exists");
+
+        User user = new User()
+        {
+            FirstName = firstName,
+            LastName = lastName,
+            Email = email,
+            Password = password
+        };
+
+        userRepository.Add(user);
+
+        string token = jwtTokenGenerator.GenerateToken(user);
         
         return new AuthenticationResult(
-            userId,
-            firstName,
-            lastName,
-            email,
+            user,
             token);
     }
 }
